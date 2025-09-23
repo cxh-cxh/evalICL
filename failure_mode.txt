@@ -1,0 +1,89 @@
+Block by the blue block; Wrong location, vertical
+Block by the blue block
+
+Bad grasp pose due to wrong location, pink block falls when being put on the blue block
+
+Wrong location, horizontal; Block by the blue block
+Wrong location, vertical
+
+Wrong location, horizontal
+Drop block, no need to ref
+
+Wrong location, vertical; Bad grasp pose due to wrong location, pink block falls when being put on the blue block
+Wrong location, horizontal; 3/10
+Wrong location, both
+Wrong location, horizontal
+
+Wrong location, both
+Wrong location, horizontal
+
+
+Block by the blue block; Wrong location, horizontal
+Block by the blue Block
+Wrong location, horizontal
+
+Drop block, no need to ref; Wrong location, horizontal
+
+Blcok by the blue block
+Wrong location, horizontal
+
+Wrong location, horizontal
+Wrong location, both, vertical small
+Wrong location, horizontal; Dynamically hard
+Wrong location, both(Mostly horizontal)
+Wrong location, horizontal, 7/10
+Wrong location, both
+
+Block by the blue block
+
+Wrong location, horizontal
+
+Wrong location, both
+
+Wrong location, horizontal
+Wrong location, both
+Block by the blue block
+Wrong location, both(Mostly vertical)
+Block by the blue block
+Grasp too early; Bad grasp pose
+Wrong location, horizontal; Dynamically hard
+Wrong location, horizontal; Dynamically hard
+
+Wrong location, both
+Block by the blue block
+
+
+
+
+Wrong location, horizontal
+
+Wrong location, horizontal; Dynamically hard
+Wrong location, horizontal
+Wrong location, horizontal
+
+
+
+
+
+
+Wrong location, horizontal
+Wrong location, both
+
+
+Wrong location, horizontal
+Wrong location, both
+Wrong location, horizontal
+Wrong location, horizontal
+
+
+Wrong location, vertical
+Wrong location, horizontal
+
+Wrong location, horizontal
+Wrong location, horizontal
+
+
+
+Grasp too early
+Wrong location, both
+Bad grasp pose; Wrong location, vertical

@@ -1,0 +1,54 @@
+You will evaluate the difficulty of a robot manipulation test case: stacking the pink cube onto the blue cube using a policy trained on a prior dataset.
+
+You will later be given:
+1. Structured numeric similarity metrics inside <rel> ... </rel>.
+2. Two images: a front camera view and a side camera view of the initial scene.
+
+Goal: Predict an integer difficulty D in [0,10].
+Interpretation: approximate success rate ≈ (100 - 10 * D)%. 0 = almost certainly succeeds, 10 = almost certainly fails.
+
+Definition of difficulty:
+How much the initial scene is distributionally harder for the learned policy compared to its training data, considering pose differences, spatial relations, visibility, and perceptual clarity that could affect grasping and precise placement.
+
+Key factors to consider (only if observable or provided):
+- Spatial displacement from training data (the provided L2 distances: total, blue-cube-only, pink-cube-only).
+- Relative alignment between cubes: lateral offset, forward/back offset, height differences impacting reach and stacking stability.
+- Occlusion: are any cube faces significantly hidden?
+- Camera pose variance: unusual perspective, tilt, extreme foreshortening.
+- Lighting: glare, strong shadows, uneven illumination reducing color/edge contrast.
+- Background or table clutter / visual distractions (if present).
+- Robot dynamics: will the robot be stuck or collide with blocks while moving?
+
+Instructions:
+- Use ONLY information actually visible or provided. Do not assume unseen conditions.
+- Treat the numeric distances as primary quantitative anchors; images contextualize qualitative difficulty modifiers.
+- If qualitative factors are neutral (normal lighting, clear view, standard perspective), do not inflate difficulty—let distances dominate.
+- If distances are low but qualitative issues are severe, you may elevate difficulty proportionally.
+- Keep reasoning explicit: reference concrete visual or numeric evidence.
+- Do NOT output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a single integer inside <difficulty> ... </difficulty> as later instructed.
+
+Use the forthcoming examples to calibrate your internal scale. Do not restate these instructions in the answer.
+
+---------
+
+The robot will be performing the task of putting the pink cube on the blue cube according to a policy trained on provided dataset.
+
+The robot will be using two cameras to observe the environment and make decisions based on the visual input. The whole environment will follow a certain protocol to ensure the overall consistency of the settings.
+
+Under this protocol, the basic elements of the environment will be the same. However, the lighting, the pose of the cameras may vary on a small scale due to unavoidable errors.
+
+Now I want you to consider the images of the initial setting of any rollout and analyze its difficulty compared to the training dataset.
+
+Although I will not be abled to provide you with the complete training dataset, I can offer you some relative difference between the test case and the training data in the <rel> and </rel> tags. Below is an example:
+
+<rel>
+- L2 distance of the test case with the nearest training data(blue cube and pink cube distance added): 2.0cm
+- L2 distance of the blue cube in the test case with the nearest blue cube in the training data: 1.0cm
+- L2 distance of the pink cube in the test case with the nearest pink cube in the training data: 0.5cm
+</rel>
+
+You will analyze the difficulty of the task based on the image of the initial setting provided. The difficulty should be assessed based on how well the robot can perform the task given the visual input from the camera.
+
+Below are some examples of test cases and their difficulty value where a difficulty value of x means the model achieved a success rate of (100-10x)% on this test case.
+
+Please learn from these examples to evaluate the difficulty of the test case you will be given.
