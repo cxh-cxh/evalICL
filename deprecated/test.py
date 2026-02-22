@@ -6,7 +6,8 @@ from io import BytesIO
 import json
 
 import os
-os.environ['OPENAI_API_KEY'] = ''
+
+os.environ["OPENAI_API_KEY"] = ""
 
 client = openai.OpenAI()
 
@@ -95,13 +96,25 @@ response = client.responses.create(
             "content": [
                 {"type": "input_text", "text": prompt},
                 {"type": "input_text", "text": desc_front_train_img},
-                {"type": "input_image", "image_url": f"data:image/png;base64,{b64_front_train_image}"},
+                {
+                    "type": "input_image",
+                    "image_url": f"data:image/png;base64,{b64_front_train_image}",
+                },
                 {"type": "input_text", "text": desc_side_train_img},
-                {"type": "input_image", "image_url": f"data:image/png;base64,{b64_side_train_image}"},
+                {
+                    "type": "input_image",
+                    "image_url": f"data:image/png;base64,{b64_side_train_image}",
+                },
                 {"type": "input_text", "text": desc_front_test_img},
-                {"type": "input_image", "image_url": f"data:image/png;base64,{b64_front_test_image}"},
+                {
+                    "type": "input_image",
+                    "image_url": f"data:image/png;base64,{b64_front_test_image}",
+                },
                 {"type": "input_text", "text": desc_side_test_img},
-                {"type": "input_image", "image_url": f"data:image/png;base64,{b64_side_test_image}"},
+                {
+                    "type": "input_image",
+                    "image_url": f"data:image/png;base64,{b64_side_test_image}",
+                },
             ],
         }
     ],

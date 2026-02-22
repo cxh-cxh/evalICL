@@ -2,6 +2,7 @@ import numpy as np
 import csv
 import seaborn as sns
 import json
+
 # 读取 new_cases.txt，按顺序保存坐标
 cases_list = []
 with open("new_cases.txt", "r") as f:
@@ -10,10 +11,12 @@ with open("new_cases.txt", "r") as f:
         parts = line.strip().split()
         if len(parts) == 5:
             _, sx, sy, bx, by = parts
-            cases_list.append({
-                "small_pos": [str(float(sx)), str(float(sy))],
-                "big_pos": [str(float(bx)), str(float(by))]
-            })
+            cases_list.append(
+                {
+                    "small_pos": [str(float(sx)), str(float(sy))],
+                    "big_pos": [str(float(bx)), str(float(by))],
+                }
+            )
 
 # 更新 new_test_cases.jsonl
 updated = []
