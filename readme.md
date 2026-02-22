@@ -76,4 +76,18 @@
 
 `progress_3_rate` : `A/B` where `A` is rollout count that reaches progress level 3, `B` is total rollout count
 
+
+## Test record format (new)
+`index` : begin at `0`
+
+`is_train` : `0` or `1`, whether the record is train data
+
+`task` : description of the task (`None` if no cross-task)
+
+`progress` : the progress in each rollout. e.g. `[1, 2, 0, 1]`
+
+`max_progress` : the progress to be regarded as success. e.g. `2`
+
+
+
 ## How to use
