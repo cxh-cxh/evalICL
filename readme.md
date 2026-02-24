@@ -89,5 +89,4 @@
 `max_progress` : the progress to be regarded as success. e.g. `2`
 
 
-
 ## How to use

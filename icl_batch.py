@@ -5,7 +5,7 @@ from datetime import datetime
 from retrieval import Retriever
 from config import configs
 from templete import *
-
+from itertools import chain
 
 import argparse
 
@@ -19,21 +19,39 @@ parser.add_argument(
 )
 parser.add_argument("--vlm", type=str, default="qwen3-vl-plus", help="name of the vlm")
 parser.add_argument("--k", type=int, default=5, help="count of neighbours")
+
+parser.add_argument("--query_envs", nargs="+", type=str, help="test environments")
+
 parser.add_argument(
-    "--starting_num",
-    type=int,
-    default=0,
-    help="count of initial records in the retriever",
-)
-parser.add_argument(
-    "--queries_num",
+    "--query_num",
     type=int,
     default=100,
     help="count of queries",
 )
-parser.add_argument("--envs", nargs="+", type=str, help="test environments")
+
 parser.add_argument(
-    "--train_envs", nargs="*", type=str, default=[], help="train environments"
+    "--query_sample_method",
+    type=str,
+    default="random",
+    help="how to sample ('all', 'random', 'env')",
+)
+
+parser.add_argument(
+    "--database_envs", nargs="*", type=str, default=[], help="database environments"
+)
+
+parser.add_argument(
+    "--database_num",
+    type=int,
+    default=0,
+    help="count of initial records in the retriever",
+)
+
+parser.add_argument(
+    "--database_sample_method",
+    type=str,
+    default="random",
+    help="how to sample ('all', 'random', 'env')",
 )
 
 args = parser.parse_args()
@@ -267,40 +285,97 @@ async def main():
 
     for run in range(args.count):
 
-        all_records = []
-        all_test_names = []
-        for test_name in args.envs:
-            data = load_jsonl("data/" + args.policy + "/" + test_name + ".jsonl")
-            all_records += data
-            all_test_names += [test_name] * len(data)
+        query_records = []  # [[1,2,3],[1,2,3],...]
+        query_names = []
+        for query_env_name in args.query_envs:
+            data = load_jsonl("data/" + args.policy + "/" + query_env_name + ".jsonl")
+            query_records.append(data)
+            query_names.append([query_env_name] * len(data))
 
-        train_records = []
-        train_names = []
-        for train_name in args.train_envs:
-            data = load_jsonl("data/" + args.policy + "/" + train_name + ".jsonl")
-            train_records += data
-            train_names += [train_name] * len(data)
+        database_records = []
+        database_names = []
+        for database_env_name in args.database_envs:
+            data = load_jsonl(
+                "data/" + args.policy + "/" + database_env_name + ".jsonl"
+            )
+            database_records.append(data)
+            database_names.append([database_env_name] * len(data))
 
-        print("Total records: ", len(all_records))
+        print("Total records: ", sum([len(rec) for rec in query_records]))
 
-        indices = list(range(len(all_records)))
-        random.shuffle(indices)
-        all_records = [all_records[index] for index in indices]
-        all_test_names = [all_test_names[index] for index in indices]
+        if args.database_sample_method == "all":
+            database_records = list(chain.from_iterable(database_records))
+            database_names = list(chain.from_iterable(database_names))
+            retriever = Retriever(
+                starting_test_records=database_records,
+                starting_test_names=database_names,
+                model_name=args.policy,
+                img_emb_path="data/img_emb.hdf5",
+            )
+        elif args.database_sample_method == "random":
+            database_records = list(chain.from_iterable(database_records))
+            database_names = list(chain.from_iterable(database_names))
+            assert args.database_num <= len(database_records)
+            indices = list(range(len(database_records)))
+            random.shuffle(indices)
+            database_records = [database_records[index] for index in indices]
+            database_names = [database_names[index] for index in indices]
+            retriever = Retriever(
+                starting_test_records=database_records[: args.database_num],
+                starting_test_names=database_names[: args.database_num],
+                model_name=args.policy,
+                img_emb_path="data/img_emb.hdf5",
+            )
+        elif args.database_sample_method == "env":
+            _database_records = []
+            _database_names = []
+            for i in range(len(database_records)):
+                assert args.database_num <= len(database_records[i])
+                indices = list(range(len(database_records[i])))
+                random.shuffle(indices)
+                _database_records += [database_records[i][index] for index in indices]
+                _database_names += [database_names[i][index] for index in indices]
+            retriever = Retriever(
+                starting_test_records=_database_records,
+                starting_test_names=_database_names,
+                model_name=args.policy,
+                img_emb_path="data/img_emb.hdf5",
+            )
+        else:
+            raise NotImplementedError
 
-        retriever = Retriever(
-            starting_test_records=train_records + all_records[: args.starting_num],
-            starting_test_names=train_names + all_test_names[: args.starting_num],
-            model_name=args.policy,
-            img_emb_path="data/img_emb.hdf5",
-        )
-        all_records = all_records[args.starting_num :]
-        all_test_names = all_test_names[args.starting_num :]
+        if args.query_sample_method == "all":
+            query_records = list(chain.from_iterable(query_records))
+            query_names = list(chain.from_iterable(query_names))
+        elif args.query_sample_method == "random":
+            query_records = list(chain.from_iterable(query_records))
+            query_names = list(chain.from_iterable(query_names))
+            assert args.query_num <= len(query_records)
+            indices = list(range(len(query_records)))
+            random.shuffle(indices)
+            query_records = [query_records[index] for index in indices][
+                : args.query_num
+            ]
+            query_names = [query_names[index] for index in indices][: args.query_num]
+
+        elif args.query_sample_method == "env":
+            _query_records = []
+            _query_names = []
+            for i in range(len(query_records)):
+                assert args.database_num <= len(query_records[i])
+                indices = list(range(len(query_records[i])))
+                random.shuffle(indices)
+                _query_records += [query_records[i][index] for index in indices]
+                _query_names += [query_names[i][index] for index in indices]
+            query_records = _query_records
+            query_names = _query_names
+        else:
+            raise NotImplementedError
 
         queries = []
-        for i in range(args.queries_num):
+        for i in range(len(query_records)):
             queries.append(
-                build_message_for_query(all_records[i], all_test_names[i], retriever)
+                build_message_for_query(query_records[i], query_names[i], retriever)
             )
 
         output_dir = os.path.join(base_dir, batch_dir, f"run_{run}")
