@@ -4,7 +4,7 @@ from openai import AsyncOpenAI, OpenAI
 from datetime import datetime
 from retrieval import Retriever
 from config import configs
-from templete import *
+from templete_new import *
 from itertools import chain
 
 import argparse
@@ -33,7 +33,7 @@ parser.add_argument(
     "--query_sample_method",
     type=str,
     default="random",
-    help="how to sample ('all', 'random', 'env')",
+    help="how to sample ('all', 'random', 'env', 'shared', 'first', 'last')",
 )
 
 parser.add_argument(
@@ -51,7 +51,7 @@ parser.add_argument(
     "--database_sample_method",
     type=str,
     default="random",
-    help="how to sample ('all', 'random', 'env')",
+    help="how to sample ('all', 'random', 'env', 'shared', 'first', 'last')",
 )
 
 args = parser.parse_args()
@@ -111,55 +111,112 @@ def build_examples_content(test_records, test_names):
     content = []
     for i in range(len(test_records)):
         ex = test_records[i]
-        # try:
-        #     difficulty = map_to_category(succ)
-        # except:
-        #     difficulty = "NA"
-        ex_desc_1 = example_templete_1.render(ex)
-        ex_desc_2 = example_templete_2.render(
-            ex,
-            progress_1_desc=progress_desc[args.task][1],
-            progress_2_desc=progress_desc[args.task][2],
-        )
-        desc_front_img = desc_front_img_templete.render(ex)
-        desc_side_img = desc_side_img_templete.render(ex)
-        img_info_path = "images/" + test_names[i] + "/info.json"
-        with open(img_info_path, "r") as f:
-            info = json.load(f)
-        content.extend(
-            [
-                {"type": "text", "text": ex_desc_1},
-            ]
-            + (
-                [
-                    {"type": "text", "text": desc_front_img},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/png;base64,{b64_of(os.path.join('images',test_names[i],info[str(ex['index'])]['front']))}"
-                        },
-                    },
-                ]
-                if "front" in info[str(ex["index"])]
-                else []
+
+        if "success_rate" in ex:  # old format
+            ex_desc_1 = example_templete_1.render(ex)
+            ex_desc_2 = example_templete_2.render(
+                ex,
+                progress_1_desc=progress_desc[args.task][1],
+                progress_2_desc=progress_desc[args.task][2],
             )
-            + (
+            desc_front_img = desc_front_img_templete.render(ex)
+            desc_side_img = desc_side_img_templete.render(ex)
+            img_info_path = "images/" + test_names[i] + "/info.json"
+            with open(img_info_path, "r") as f:
+                info = json.load(f)
+            content.extend(
                 [
-                    {"type": "text", "text": desc_side_img},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/png;base64,{b64_of(os.path.join('images',test_names[i],info[str(ex['index'])]['side']))}"
-                        },
-                    },
+                    {"type": "text", "text": ex_desc_1},
                 ]
-                if "side" in info[str(ex["index"])]
-                else []
+                + (
+                    [
+                        {"type": "text", "text": desc_front_img},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{b64_of(os.path.join('images',test_names[i],info[str(ex['index'])]['front']))}"
+                            },
+                        },
+                    ]
+                    if "front" in info[str(ex["index"])]
+                    else []
+                )
+                + (
+                    [
+                        {"type": "text", "text": desc_side_img},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{b64_of(os.path.join('images',test_names[i],info[str(ex['index'])]['side']))}"
+                            },
+                        },
+                    ]
+                    if "side" in info[str(ex["index"])]
+                    else []
+                )
+                + [
+                    {"type": "text", "text": ex_desc_2},
+                ]
             )
-            + [
-                {"type": "text", "text": ex_desc_2},
-            ]
-        )
+        else:  # new format
+            ex_desc_1 = example_templete_1.render(ex)
+            fail_desc = ""
+            success_rate = ""
+            if ex["is_train"] == 0:
+                success_rate = (
+                    f"{ex['progress'].count(ex['max_progress'])}/{len(ex['progress'])}"
+                )
+                for prog in set(ex["progress"]):
+                    if prog in progress_desc[args.task]:
+                        fail_desc += fail_desc_templete.render(
+                            desc=progress_desc[args.task][prog],
+                            count=ex["progress"].count(prog),
+                            total=len(ex["progress"]),
+                        )
+            ex_desc_2 = example_templete_2.render(
+                ex,
+                success_rate=success_rate,
+                fail_desc=fail_desc,
+            )
+            desc_front_img = desc_front_img_templete.render(ex)
+            desc_side_img = desc_side_img_templete.render(ex)
+            img_info_path = "images/" + test_names[i] + "/info.json"
+            with open(img_info_path, "r") as f:
+                info = json.load(f)
+            content.extend(
+                [
+                    {"type": "text", "text": ex_desc_1},
+                ]
+                + (
+                    [
+                        {"type": "text", "text": desc_front_img},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{b64_of(os.path.join('images',test_names[i],info[str(ex['index'])]['front']))}"
+                            },
+                        },
+                    ]
+                    if "front" in info[str(ex["index"])]
+                    else []
+                )
+                + (
+                    [
+                        {"type": "text", "text": desc_side_img},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{b64_of(os.path.join('images',test_names[i],info[str(ex['index'])]['side']))}"
+                            },
+                        },
+                    ]
+                    if "side" in info[str(ex["index"])]
+                    else []
+                )
+                + [
+                    {"type": "text", "text": ex_desc_2},
+                ]
+            )
     return content
 
 
@@ -303,74 +360,137 @@ async def main():
 
         print("Total records: ", sum([len(rec) for rec in query_records]))
 
-        if args.database_sample_method == "all":
-            database_records = list(chain.from_iterable(database_records))
-            database_names = list(chain.from_iterable(database_names))
-            retriever = Retriever(
-                starting_test_records=database_records,
-                starting_test_names=database_names,
-                model_name=args.policy,
-                img_emb_path="data/img_emb.hdf5",
-            )
-        elif args.database_sample_method == "random":
-            database_records = list(chain.from_iterable(database_records))
-            database_names = list(chain.from_iterable(database_names))
-            assert args.database_num <= len(database_records)
-            indices = list(range(len(database_records)))
+        if args.database_sample_method == "shared":
+            assert args.database_sample_method == args.query_sample_method
+            assert args.database_envs == args.query_envs
+            all_records = list(chain.from_iterable(database_records))
+            all_names = list(chain.from_iterable(database_names))
+            assert args.database_num + args.query_num <= len(all_records)
+            indices = list(range(len(all_records)))
             random.shuffle(indices)
-            database_records = [database_records[index] for index in indices]
-            database_names = [database_names[index] for index in indices]
+            all_records = [all_records[index] for index in indices]
+            all_names = [all_names[index] for index in indices]
             retriever = Retriever(
-                starting_test_records=database_records[: args.database_num],
-                starting_test_names=database_names[: args.database_num],
+                starting_test_records=all_records[: args.database_num],
+                starting_test_names=all_names[: args.database_num],
                 model_name=args.policy,
                 img_emb_path="data/img_emb.hdf5",
             )
-        elif args.database_sample_method == "env":
-            _database_records = []
-            _database_names = []
-            for i in range(len(database_records)):
-                assert args.database_num <= len(database_records[i])
-                indices = list(range(len(database_records[i])))
-                random.shuffle(indices)
-                _database_records += [database_records[i][index] for index in indices]
-                _database_names += [database_names[i][index] for index in indices]
-            retriever = Retriever(
-                starting_test_records=_database_records,
-                starting_test_names=_database_names,
-                model_name=args.policy,
-                img_emb_path="data/img_emb.hdf5",
-            )
-        else:
-            raise NotImplementedError
-
-        if args.query_sample_method == "all":
-            query_records = list(chain.from_iterable(query_records))
-            query_names = list(chain.from_iterable(query_names))
-        elif args.query_sample_method == "random":
-            query_records = list(chain.from_iterable(query_records))
-            query_names = list(chain.from_iterable(query_names))
-            assert args.query_num <= len(query_records)
-            indices = list(range(len(query_records)))
-            random.shuffle(indices)
-            query_records = [query_records[index] for index in indices][
-                : args.query_num
+            query_records = all_records[
+                args.database_num : args.database_num + args.query_num
             ]
-            query_names = [query_names[index] for index in indices][: args.query_num]
-
-        elif args.query_sample_method == "env":
-            _query_records = []
-            _query_names = []
-            for i in range(len(query_records)):
-                assert args.database_num <= len(query_records[i])
-                indices = list(range(len(query_records[i])))
-                random.shuffle(indices)
-                _query_records += [query_records[i][index] for index in indices]
-                _query_names += [query_names[i][index] for index in indices]
-            query_records = _query_records
-            query_names = _query_names
+            query_names = all_names[
+                args.database_num : args.database_num + args.query_num
+            ]
         else:
-            raise NotImplementedError
+            if args.database_sample_method == "all":
+                database_records = list(chain.from_iterable(database_records))
+                database_names = list(chain.from_iterable(database_names))
+                retriever = Retriever(
+                    starting_test_records=database_records,
+                    starting_test_names=database_names,
+                    model_name=args.policy,
+                    img_emb_path="data/img_emb.hdf5",
+                )
+            elif args.database_sample_method == "random":
+                database_records = list(chain.from_iterable(database_records))
+                database_names = list(chain.from_iterable(database_names))
+                assert args.database_num <= len(database_records)
+                indices = list(range(len(database_records)))
+                random.shuffle(indices)
+                database_records = [database_records[index] for index in indices]
+                database_names = [database_names[index] for index in indices]
+                retriever = Retriever(
+                    starting_test_records=database_records[: args.database_num],
+                    starting_test_names=database_names[: args.database_num],
+                    model_name=args.policy,
+                    img_emb_path="data/img_emb.hdf5",
+                )
+            elif args.database_sample_method == "env":
+                _database_records = []
+                _database_names = []
+                for i in range(len(database_records)):
+                    assert args.database_num <= len(database_records[i])
+                    indices = list(range(len(database_records[i])))
+                    random.shuffle(indices)
+                    _database_records += [
+                        database_records[i][index]
+                        for index in indices[: args.database_num]
+                    ]
+                    _database_names += [
+                        database_names[i][index]
+                        for index in indices[: args.database_num]
+                    ]
+                retriever = Retriever(
+                    starting_test_records=_database_records,
+                    starting_test_names=_database_names,
+                    model_name=args.policy,
+                    img_emb_path="data/img_emb.hdf5",
+                )
+            elif args.database_sample_method == "first":
+                database_records = list(chain.from_iterable(database_records))
+                database_names = list(chain.from_iterable(database_names))
+                retriever = Retriever(
+                    starting_test_records=database_records[: args.database_num],
+                    starting_test_names=database_names[: args.database_num],
+                    model_name=args.policy,
+                    img_emb_path="data/img_emb.hdf5",
+                )
+            elif args.database_sample_method == "last":
+                database_records = list(chain.from_iterable(database_records))
+                database_names = list(chain.from_iterable(database_names))
+                retriever = Retriever(
+                    starting_test_records=database_records[-args.database_num :],
+                    starting_test_names=database_names[-args.database_num :],
+                    model_name=args.policy,
+                    img_emb_path="data/img_emb.hdf5",
+                )
+            else:
+                raise NotImplementedError
+
+            if args.query_sample_method == "all":
+                query_records = list(chain.from_iterable(query_records))
+                query_names = list(chain.from_iterable(query_names))
+            elif args.query_sample_method == "random":
+                query_records = list(chain.from_iterable(query_records))
+                query_names = list(chain.from_iterable(query_names))
+                assert args.query_num <= len(query_records)
+                indices = list(range(len(query_records)))
+                random.shuffle(indices)
+                query_records = [query_records[index] for index in indices][
+                    : args.query_num
+                ]
+                query_names = [query_names[index] for index in indices][
+                    : args.query_num
+                ]
+
+            elif args.query_sample_method == "env":
+                _query_records = []
+                _query_names = []
+                for i in range(len(query_records)):
+                    assert args.database_num <= len(query_records[i])
+                    indices = list(range(len(query_records[i])))
+                    random.shuffle(indices)
+                    _query_records += [
+                        query_records[i][index] for index in indices[: args.query_num]
+                    ]
+                    _query_names += [
+                        query_names[i][index] for index in indices[: args.query_num]
+                    ]
+                query_records = _query_records
+                query_names = _query_names
+            elif args.query_sample_method == "first":
+                query_records = list(chain.from_iterable(query_records))[
+                    : args.query_num
+                ]
+                query_names = list(chain.from_iterable(query_names))[: args.query_num]
+            elif args.query_sample_method == "last":
+                query_records = list(chain.from_iterable(query_records))[
+                    -args.query_num :
+                ]
+                query_names = list(chain.from_iterable(query_names))[-args.query_num :]
+            else:
+                raise NotImplementedError
 
         queries = []
         for i in range(len(query_records)):
@@ -394,8 +514,8 @@ async def main():
         await asyncio.gather(*tasks)
         ordered = [results.get(i, "NA") for i in range(len(queries))]
         final_result = [
-            {"difficulty": ordered[i], "record": all_records[i]}
-            for i in range(args.queries_num)
+            {"difficulty": ordered[i], "record": query_records[i]}
+            for i in range(len(query_records))
         ]
         with open(os.path.join(output_dir, "result.json"), "w", encoding="utf-8") as f:
             json.dump(final_result, f, ensure_ascii=False, indent=4)
