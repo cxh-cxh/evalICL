@@ -312,6 +312,24 @@ async def handle_query(sema, i, client, vlm_type, query_msg, results, output_dir
         text = resp.choices[0].message.content
         m = re.search(r"<difficulty>(.*?)</difficulty>", text, re.DOTALL)
         diff = m.group(1).strip() if m else "NA"
+        retries = 0
+        while diff == "NA" and retries < 3:
+            print(f"Query {i} returned NA, retry")
+            retries += 1
+            try:
+                resp = await client.chat.completions.create(
+                    model=vlm_type,
+                    messages=[{"role": "user", "content": query_msg}],
+                    stream=False,
+                    extra_body=configs[vlm_type].extra_body,
+                )
+                text = resp.choices[0].message.content
+                m = re.search(r"<difficulty>(.*?)</difficulty>", text, re.DOTALL)
+                diff = m.group(1).strip() if m else "NA"
+            except Exception as e:
+                print(f"Query {i} error: {e}")
+                return
+
         with open(
             os.path.join(output_dir, f"response_{i}.json"), "w", encoding="utf-8"
         ) as f:

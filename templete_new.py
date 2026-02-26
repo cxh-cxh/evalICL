@@ -469,6 +469,14 @@ You will be provided with {{ k }} records of previous rollouts or train cases. U
 )
 
 progress_desc = {
+    "t10003": {
+        1: "",
+        2: "",
+    },
+    "t10003_sim": {
+        1: "",
+        2: "",
+    },
     "t7": {
         1: "the model picked and put one cube into the cup",
         2: "the model picked and put two cubes into the cup",

@@ -8,3 +8,4 @@ collate/
 __pycache__/
 dynamic_weight/
 test/
+*.sh
