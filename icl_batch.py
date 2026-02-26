@@ -92,6 +92,42 @@ def load_jsonl(path="./test_cases.jsonl"):
     return data
 
 
+def sample_records(records, names, num, method):
+    if method == "all":
+        records = list(chain.from_iterable(records))
+        names = list(chain.from_iterable(names))
+        return records, names
+    elif method == "random":
+        records = list(chain.from_iterable(records))
+        names = list(chain.from_iterable(names))
+        assert num <= len(records)
+        indices = list(range(len(records)))
+        random.shuffle(indices)
+        records = [records[index] for index in indices]
+        names = [names[index] for index in indices]
+        return records[:num], names[:num]
+    elif method == "env":
+        _records = []
+        _names = []
+        for i in range(len(records)):
+            assert args.database_num <= len(records[i])
+            indices = list(range(len(records[i])))
+            random.shuffle(indices)
+            _records += [records[i][index] for index in indices[:num]]
+            _names += [names[i][index] for index in indices[:num]]
+        return _records, _names
+    elif method == "first":
+        records = list(chain.from_iterable(records))
+        names = list(chain.from_iterable(names))
+        return records[:num], names[:num]
+    elif method == "last":
+        records = list(chain.from_iterable(records))
+        names = list(chain.from_iterable(names))
+        return records[-num:], names[-num:]
+    else:
+        raise NotImplementedError
+
+
 desc_front_img = "This image below shows the front camera view in this test case."
 desc_side_img = "This image below shows the side camera view in this test case."
 
@@ -401,114 +437,24 @@ async def main():
                 args.database_num : args.database_num + args.query_num
             ]
         else:
-            if args.database_sample_method == "all":
-                database_records = list(chain.from_iterable(database_records))
-                database_names = list(chain.from_iterable(database_names))
-                retriever = Retriever(
-                    starting_test_records=database_records,
-                    starting_test_names=database_names,
-                    model_name=args.policy,
-                    img_emb_path="data/img_emb.hdf5",
-                )
-            elif args.database_sample_method == "random":
-                database_records = list(chain.from_iterable(database_records))
-                database_names = list(chain.from_iterable(database_names))
-                assert args.database_num <= len(database_records)
-                indices = list(range(len(database_records)))
-                random.shuffle(indices)
-                database_records = [database_records[index] for index in indices]
-                database_names = [database_names[index] for index in indices]
-                retriever = Retriever(
-                    starting_test_records=database_records[: args.database_num],
-                    starting_test_names=database_names[: args.database_num],
-                    model_name=args.policy,
-                    img_emb_path="data/img_emb.hdf5",
-                )
-            elif args.database_sample_method == "env":
-                _database_records = []
-                _database_names = []
-                for i in range(len(database_records)):
-                    assert args.database_num <= len(database_records[i])
-                    indices = list(range(len(database_records[i])))
-                    random.shuffle(indices)
-                    _database_records += [
-                        database_records[i][index]
-                        for index in indices[: args.database_num]
-                    ]
-                    _database_names += [
-                        database_names[i][index]
-                        for index in indices[: args.database_num]
-                    ]
-                retriever = Retriever(
-                    starting_test_records=_database_records,
-                    starting_test_names=_database_names,
-                    model_name=args.policy,
-                    img_emb_path="data/img_emb.hdf5",
-                )
-            elif args.database_sample_method == "first":
-                database_records = list(chain.from_iterable(database_records))
-                database_names = list(chain.from_iterable(database_names))
-                retriever = Retriever(
-                    starting_test_records=database_records[: args.database_num],
-                    starting_test_names=database_names[: args.database_num],
-                    model_name=args.policy,
-                    img_emb_path="data/img_emb.hdf5",
-                )
-            elif args.database_sample_method == "last":
-                database_records = list(chain.from_iterable(database_records))
-                database_names = list(chain.from_iterable(database_names))
-                retriever = Retriever(
-                    starting_test_records=database_records[-args.database_num :],
-                    starting_test_names=database_names[-args.database_num :],
-                    model_name=args.policy,
-                    img_emb_path="data/img_emb.hdf5",
-                )
-            else:
-                raise NotImplementedError
-
-            if args.query_sample_method == "all":
-                query_records = list(chain.from_iterable(query_records))
-                query_names = list(chain.from_iterable(query_names))
-            elif args.query_sample_method == "random":
-                query_records = list(chain.from_iterable(query_records))
-                query_names = list(chain.from_iterable(query_names))
-                assert args.query_num <= len(query_records)
-                indices = list(range(len(query_records)))
-                random.shuffle(indices)
-                query_records = [query_records[index] for index in indices][
-                    : args.query_num
-                ]
-                query_names = [query_names[index] for index in indices][
-                    : args.query_num
-                ]
-
-            elif args.query_sample_method == "env":
-                _query_records = []
-                _query_names = []
-                for i in range(len(query_records)):
-                    assert args.database_num <= len(query_records[i])
-                    indices = list(range(len(query_records[i])))
-                    random.shuffle(indices)
-                    _query_records += [
-                        query_records[i][index] for index in indices[: args.query_num]
-                    ]
-                    _query_names += [
-                        query_names[i][index] for index in indices[: args.query_num]
-                    ]
-                query_records = _query_records
-                query_names = _query_names
-            elif args.query_sample_method == "first":
-                query_records = list(chain.from_iterable(query_records))[
-                    : args.query_num
-                ]
-                query_names = list(chain.from_iterable(query_names))[: args.query_num]
-            elif args.query_sample_method == "last":
-                query_records = list(chain.from_iterable(query_records))[
-                    -args.query_num :
-                ]
-                query_names = list(chain.from_iterable(query_names))[-args.query_num :]
-            else:
-                raise NotImplementedError
+            database_records, database_names = sample_records(
+                database_records,
+                database_names,
+                args.database_num,
+                args.database_sample_method,
+            )
+            retriever = Retriever(
+                starting_test_records=database_records,
+                starting_test_names=database_names,
+                model_name=args.policy,
+                img_emb_path="data/img_emb.hdf5",
+            )
+            query_records, query_names = sample_records(
+                query_records,
+                query_names,
+                args.query_num,
+                args.query_sample_method,
+            )
 
         queries = []
         for i in range(len(query_records)):
