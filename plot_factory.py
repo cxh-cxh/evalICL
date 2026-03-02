@@ -143,3 +143,46 @@ def variance_plot(
 def savefig(path):
     plt.tight_layout()
     plt.savefig(path)
+
+
+def broken_bar(high_lim, low_lim):
+    sns.set_theme("notebook", style="ticks", palette="pastel")
+    RED = "#8B0000"
+    GREEN = "#50D050"
+    GREY = "#C6C7CC"
+    plt.rcParams["axes.titlecolor"] = "black"
+    plt.rcParams["axes.labelcolor"] = "#414246"
+    plt.rcParams["xtick.color"] = "#414246"
+    plt.rcParams["ytick.color"] = "#414246"
+    plt.rcParams["axes.edgecolor"] = "#414246"
+    plt.rcParams["axes.edgecolor"] = "#414246"
+    plt.rcParams["legend.labelcolor"] = "black"
+    fig, (ax1, ax2) = plt.subplots(
+        2,
+        1,
+        sharex=True,
+        figsize=(12, 8),
+        gridspec_kw={"height_ratios": [4, 1], "hspace": 0.05},
+    )
+    ax1.tick_params(axis="x", which="both", bottom=False, labelbottom=False)
+    ax1.spines["top"].set_visible(False)
+    ax1.spines["right"].set_visible(False)
+    ax1.spines["bottom"].set_visible(False)
+    ax1.tick_params(labeltop=False)
+    ax2.tick_params(labeltop=False)
+    ax2.spines["top"].set_visible(False)
+    ax2.spines["right"].set_visible(False)
+    ax2.set_yticks(low_lim)
+    ax1.set_ylim(*high_lim)
+    ax2.set_ylim(*low_lim)
+
+    d = 0.015
+    kwargs = dict(transform=ax1.transAxes, color="black", clip_on=False, linewidth=1.5)
+    ax1.plot((-d, +d), (-d, +d), **kwargs)
+    ax1.plot((1 - d, 1 + d), (-d, +d), **kwargs)
+
+    kwargs.update(transform=ax2.transAxes)
+    ax2.plot((-d, +d), (1 - d * 4, 1 + d * 4), **kwargs)
+    ax2.plot((1 - d, 1 + d), (1 - d * 4, 1 + d * 4), **kwargs)
+
+    return ax1, ax2

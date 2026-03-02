@@ -7,16 +7,24 @@ from plot_factory import *
 
 alpha = 0.9
 use_progress = True
-batch_paths = [
-    # "results/pi0_t10003_sim_full_20260131_004414_qwen3-vl-plus",
-    "results/pi0_t10003_000_20260225_153314_qwen3-vl-plus",
-    "results/pi0_t10003_001_20260225_161406_qwen3-vl-plus",
-    "results/pi0_t10003_002_20260225_164636_qwen3-vl-plus",
-    "results/pi0_t10003_006_20260225_184929_qwen3-vl-plus",
-    "results/pi0_t10003_007_20260225_181622_qwen3-vl-plus",
-    "results/pi0_t7_003_20260225_200353_qwen3-vl-plus",
-    # "results/pi0_t10003_20251113_175854_qwen3-vl-plus",
+batch_names = [
+    "pi0_t10003_000",
+    "pi0_t10003_001",
+    "pi0_t10003_002",
+    "pi0_t10003_006",
+    "pi0_t10003_007",
+    "pi0_t7_003",
 ]
+
+
+def get_results(name):
+    for path in glob.glob(os.path.join("results", name)):
+        if path.split("/")[-1].startswith(name):
+            info = json.load(os.path.join(path, "info.json"))
+            print(f"Find result at: {path}, with {info['count']} runs.")
+            return path
+    print("Find no results.")
+    return None
 
 
 def bilinear(x, mid):
@@ -152,6 +160,6 @@ def main(batch_path):
 
 
 if __name__ == "__main__":
-    for batch_path in batch_paths:
-        print(batch_path)
-        main(batch_path)
+    for batch_name in batch_names:
+        path = get_results(batch_name)
+        main(path)

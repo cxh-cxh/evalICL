@@ -9,3 +9,4 @@ __pycache__/
 dynamic_weight/
 test/
 *.sh
+*.png

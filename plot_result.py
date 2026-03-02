@@ -3,18 +3,12 @@ from matplotlib import pyplot as plt
 import matplotlib.lines as lines
 import os, glob
 import numpy as np
-import seaborn as sns
+from plot_factory import broken_bar
 
-sns.set_theme("notebook", style="ticks", palette="pastel")
 RED = "#8B0000"
-GREY = "#414246"
-plt.rcParams["axes.titlecolor"] = "#8B0000"
-plt.rcParams["axes.labelcolor"] = "#414246"
-plt.rcParams["xtick.color"] = "#414246"
-plt.rcParams["ytick.color"] = "#414246"
-plt.rcParams["axes.edgecolor"] = "#414246"
-plt.rcParams["axes.edgecolor"] = "#414246"
-plt.rcParams["legend.labelcolor"] = "#8B0000"
+BLUE = "#0BB4FF"
+GREY = "#8E8E93"
+
 
 # plt.rcParams['figure.facecolor'] = 'white'
 
@@ -54,26 +48,32 @@ ticks = ["common", "DARE"]
 
 width = 1
 count = len(data[0])
+y_lim_high = [0.3, 0.5]
+y_lim_low = [0, 0.1]
 
-fig, ax = plt.subplots()
-ax.set_title(
+ax1, ax2 = broken_bar(y_lim_high, y_lim_low)
+ax1.set_title(
     "Pick and Place Task Scores",
     fontweight="bold",
+    size="x-large",
 )
 
-ax.spines["top"].set_visible(False)
-ax.spines["right"].set_visible(False)
-ax.bar(
+ax1.bar(
     [width * x for x in range(count)],
     data[0],
     width=width,
     color=GREY,
 )
-
+ax2.bar(
+    [width * x for x in range(count)],
+    data[0],
+    width=width,
+    color=GREY,
+)
 diff0 = data[0] - ref[0]
 
 for i in range(count):
-    ax.text(
+    ax1.text(
         width * i,
         np.maximum(data[0][i], ref[0]),
         top_label[i],
@@ -84,7 +84,7 @@ for i in range(count):
     )
 
     if diff0[i] < 0:
-        ax.bar(
+        ax1.bar(
             [width * i],
             height=-diff0[i],
             bottom=data[0][i],
@@ -96,7 +96,7 @@ for i in range(count):
             linewidth=1.2,
         )
     else:
-        ax.bar(
+        ax1.bar(
             [width * i],
             height=diff0[i],
             bottom=ref[0],
@@ -109,39 +109,45 @@ for i in range(count):
 
 line0 = lines.Line2D([-1, count * width], [ref[0], ref[0]], color=GREY, ls="--")
 
-ax.bar(
+ax1.bar(
     [width * x + 1 + count * width for x in range(count)],
     data[1],
     width=width,
-    color=RED,
+    color=BLUE,
+)
+ax2.bar(
+    [width * x + 1 + count * width for x in range(count)],
+    data[1],
+    width=width,
+    color=BLUE,
 )
 
 diff1 = data[1] - ref[1]
 
 for i in range(count):
-    ax.text(
+    ax1.text(
         width * i + 1 + count * width,
         np.maximum(data[1][i], ref[1]),
         top_label[i],
         horizontalalignment="center",
         verticalalignment="bottom",
         fontsize=9,
-        color=RED,
+        color=BLUE,
     )
     if diff1[i] < 0:
-        ax.bar(
+        ax1.bar(
             [width * i + 1 + count * width],
             height=-diff1[i],
             bottom=data[1][i],
             width=width - 0.05,
-            color=RED,
+            color=BLUE,
             hatch="///",
             fill=False,
-            edgecolor=RED,
+            edgecolor=BLUE,
             linewidth=1.2,
         )
     else:
-        ax.bar(
+        ax1.bar(
             [width * i + 1 + count * width],
             height=diff1[i],
             bottom=ref[1],
@@ -154,12 +160,12 @@ for i in range(count):
 
 
 line1 = lines.Line2D(
-    [count * width, 2 * count * width + 1], [ref[1], ref[1]], color=RED, ls="--"
+    [count * width, 2 * count * width + 1], [ref[1], ref[1]], color=BLUE, ls="--"
 )
 
-ax.add_line(line0)
-ax.add_line(line1)
-ax.set_xticks([4 * width * x + 1 for x in range(2)], ticks)
+ax1.add_line(line0)
+ax1.add_line(line1)
+ax1.set_xticks([4 * width * x + 1 for x in range(2)], ticks)
 
 
 # ax.set_title(
