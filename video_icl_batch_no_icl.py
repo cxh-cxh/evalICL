@@ -2,7 +2,6 @@
 import os, json, re, asyncio, functools, pathlib, base64, random
 from openai import AsyncOpenAI, OpenAI
 from datetime import datetime
-from retrieval import Retriever
 from config import configs
 from templete_new import *
 from video_sampler import sample_video
@@ -35,12 +34,11 @@ parser.add_argument("--envs", nargs="+", type=str, help="test environments")
 parser.add_argument(
     "--train_envs", nargs="*", type=str, default=[], help="train environments"
 )
-parser.add_argument(
-    "--retrieve_method",
-    type=str,
-    default="k-near",
-    help="how to retrieve ('k-near', 'random')",
-)
+# parser.add_argument(
+#     "--video_root",
+#     type=str,
+#     default="/mnt/sdb/benchmarking/videos/pi0_2026_1_drawer_aug_drawer",
+# )
 args = parser.parse_args()
 
 
@@ -182,7 +180,7 @@ base_prompt_templetes = {
 BASE_PROMPT = base_prompt_templetes[args.task].render(k=args.k)
 
 
-def build_message_for_query(args, test_record, test_name, retriever):
+def build_message_for_query(args, test_record, test_name):
     front_imgs = sample_video(
         os.path.join(test_record["video_root"], test_record["video"]["front"]),
         # sample_rate=30,
@@ -203,11 +201,6 @@ def build_message_for_query(args, test_record, test_name, retriever):
 
     content = []
     content.append({"type": "text", "text": BASE_PROMPT})
-
-    retrieve = retriever.retrieve(
-        test_record, test_name, k=args.k, method=args.retrieve_method, increament=True
-    )
-    content.extend(build_examples_content(retrieve[1], retrieve[2]))
 
     content.extend(
         [
@@ -257,25 +250,6 @@ async def handle_query(sema, i, client, vlm_type, query_msg, results, output_dir
         text = resp.choices[0].message.content
         m = re.search(r"<difficulty>(.*?)</difficulty>", text, re.DOTALL)
         diff = m.group(1).strip() if m else "NA"
-
-        retries = 0
-        while diff == "NA" and retries < 3:
-            print(f"Query {i} returned NA, retry")
-            retries += 1
-            try:
-                resp = await client.chat.completions.create(
-                    model=vlm_type,
-                    messages=[{"role": "user", "content": query_msg}],
-                    stream=False,
-                    extra_body=configs[vlm_type].extra_body,
-                )
-                text = resp.choices[0].message.content
-                m = re.search(r"<difficulty>(.*?)</difficulty>", text, re.DOTALL)
-                diff = m.group(1).strip() if m else "NA"
-            except Exception as e:
-                print(f"Query {i} error: {e}")
-                return
-
         with open(
             os.path.join(output_dir, f"response_{i}.json"), "w", encoding="utf-8"
         ) as f:
@@ -327,13 +301,6 @@ async def main():
         all_records = [all_records[index] for index in indices]
         all_test_names = [all_test_names[index] for index in indices]
 
-        retriever = Retriever(
-            starting_test_records=train_records + all_records[: args.starting_num],
-            starting_test_names=train_names + all_test_names[: args.starting_num],
-            model_name=args.policy,
-            img_emb_path="data/video_emb.hdf5",
-            is_video=True,
-        )
         all_records = all_records[args.starting_num :]
         all_test_names = all_test_names[args.starting_num :]
 
@@ -341,9 +308,7 @@ async def main():
         for i in range(args.queries_num):
 
             queries.append(
-                build_message_for_query(
-                    args, all_records[i], all_test_names[i], retriever
-                )
+                build_message_for_query(args, all_records[i], all_test_names[i])
             )
 
         output_dir = os.path.join(base_dir, batch_dir, f"run_{run}")

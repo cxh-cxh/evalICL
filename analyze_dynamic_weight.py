@@ -8,20 +8,24 @@ from plot_factory import *
 alpha = 0.9
 use_progress = True
 batch_names = [
-    "pi0_t10003_000",
-    "pi0_t10003_001",
-    "pi0_t10003_002",
-    "pi0_t10003_006",
-    "pi0_t10003_007",
-    "pi0_t7_003",
+    # "pi0_t10003_000",
+    # "pi0_t10003_001",
+    # "pi0_t10003_002",
+    # "pi0_t10003_006",
+    # "pi0_t10003_007",
+    # "pi0_t7_003",
+    "pi0_t10003_008",
+    "pi0_t10003_009",
+    "pi0_t10003_010",
 ]
 
 
 def get_results(name):
-    for path in glob.glob(os.path.join("results", name)):
+    for path in glob.glob("results/*"):
         if path.split("/")[-1].startswith(name):
-            info = json.load(os.path.join(path, "info.json"))
-            print(f"Find result at: {path}, with {info['count']} runs.")
+            with open(os.path.join(path, "info.json"), "r") as f:
+                info = json.load(f)
+                print(f"Find result at: {path}, with {info['count']} runs.")
             return path
     print("Find no results.")
     return None
@@ -154,6 +158,7 @@ def main(batch_path):
 
     axs = get_subplots(2)
     difficulty_plot(axs[0], data)
+    score_plot(axs[1], data)
 
     print(scores[:, -1])
     savefig("dynamic_weight/" + batch_path.split("/")[-1] + ".png")

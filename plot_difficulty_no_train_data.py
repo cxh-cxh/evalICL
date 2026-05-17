@@ -6,7 +6,7 @@ import numpy as np
 import seaborn as sns
 from scipy import stats
 
-sns.set_theme("notebook", style="whitegrid", palette="pastel")
+sns.set_theme("notebook", style="ticks", palette="pastel")
 plt.rcParams["axes.titlecolor"] = "black"
 plt.rcParams["axes.labelcolor"] = "#414246"
 plt.rcParams["xtick.color"] = "#414246"
@@ -14,33 +14,29 @@ plt.rcParams["ytick.color"] = "#414246"
 plt.rcParams["axes.edgecolor"] = "#414246"
 plt.rcParams["axes.edgecolor"] = "#414246"
 plt.rcParams["legend.labelcolor"] = "black"
-plt.rcParams["font.family"].insert(0, "WenQuanYi Micro Hei")
-plt.rcParams["axes.unicode_minus"] = False
+
 # plt.rcParams['figure.facecolor'] = 'white'
 
 name_transform = {
-    "pi0_t10003_full": "堆叠方块",
-    "pi0_t7_full": "放置方块入杯",
-    "pi05_task40_full": "移动物体",
-    "pi0_t10_full": "拼图",
-    "pi0_t10003_sim_full": "堆叠方块（仿真）",
-    "pi0_t10003_sim_mixed": "堆叠方块（仿真）",
-    "pi0_drawer_full": "清空抽屉",
-    "pi05_box_no_train_data": "清空盒子",
+    "pi0_t10003_no_train_data": "Pick and Place",
+    "pi0_t7_no_train_data": "Cube in Cup",
+    "pi05_task40_no_train_data": "ALOHA Transfer",
+    "pi0_t10_no_train_data": "Puzzle",
+    "pi0_t10003_sim_no_train_data": "Pick and Place Sim",
+    "pi0_drawer_no_train_data": "Drawer",
 }
 
 tasks = [
-    "pi0_t10003_full",
-    "pi0_t10003_sim_mixed",
-    "pi0_t7_full",
-    "pi05_task40_full",
-    "pi0_t10_full",
-    "pi0_drawer_full",
-    "pi05_box_no_train_data",
+    "pi0_t10003_no_train_data",
+    "pi0_t10003_sim_no_train_data",
+    "pi0_t7_no_train_data",
+    "pi0_t10_no_train_data",
+    "pi05_task40_no_train_data",
 ]
 
 with open("./collate/difficulty.json") as f:
     data_ = json.load(f)
+
 
 data = [
     [np.mean(data_[task]["easy"]) for task in tasks],
@@ -63,35 +59,32 @@ ax.bar(
     data[0],
     width=width,
     color="#50D050",
-    label="简单",
-    edgecolor="black",
+    label="easy",
 )
 ax.bar(
     [4 * width * x + 1 for x in range(count)],
     data[1],
     width=width,
     color="#FFEC00",
-    label="中等",
-    edgecolor="black",
+    label="medium",
 )
 ax.bar(
     [4 * width * x + 2 for x in range(count)],
     data[2],
     width=width,
     color="#E61D5C",
-    label="困难",
-    edgecolor="black",
+    label="hard",
 )
 ax.set_xticks([4 * width * x + 1 for x in range(count)], ticks)
 
 
 ax.set_title(
-    "各任务评测样例按难度分组的平均后验成功率/进度",
+    "Average Posterior Success / Progress Rate by Predicted Difficulty",
     fontweight="bold",
 )
 ax.legend()
 plt.tight_layout()
-# plt.savefig("difficulty.png", dpi=200)
+plt.savefig("difficulty.png", dpi=200)
 
 for i in range(len(tasks)):
     f_stat, p_value = stats.f_oneway(
@@ -109,6 +102,6 @@ for i in range(len(tasks)):
     )
     df_between = k - 1
     df_within = N - k
-    print(N)
+
     eta_squared_from_f = (f_stat * df_between) / (f_stat * df_between + df_within)
     print(f"从 F 值反推 η² = {eta_squared_from_f:.4f}")

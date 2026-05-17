@@ -12,14 +12,13 @@ import pdb
 from video_sampler import sample_video
 import numpy as np
 
-
 ckpt_path = "/mnt/sdb/benchmarking/train/pi0_2025_9_t10_generalist/checkpoints/400000/pretrained_model"
 task_prompt = [""]
 policy = PI0Policy.from_pretrained(ckpt_path)  # ACTPolicy DiffusionPolicy PI0Policy
 policy.eval()
 policy.to(torch.device("cuda"))
 
-model_name = "pi0_drawer"
+model_name = "pi05_box"
 
 hdf5_path = "/home/rhos/ICL/data/video_emb.hdf5"
 if os.path.exists(hdf5_path):
@@ -93,10 +92,10 @@ def video_emb(front_imgs, side_imgs):
     return front_img_emb.mean(dim=0), side_img_emb.mean(dim=0)
 
 
-video_root = "/mnt/sdb/benchmarking/videos/pi0_2026_1_drawer_aug_drawer/"
+video_root = "/mnt/sdb/benchmarking/videos/pi05_box_6/"
 video_meta = "meta.json"
 
-env_name = "drawer_env1"
+env_name = "box_6"
 
 data = collections.defaultdict(dict)
 # if os.path.exists(os.path.join(root, "imgemb.json")):

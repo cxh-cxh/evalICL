@@ -10,10 +10,24 @@ sns.set_theme("notebook", style="darkgrid", palette="pastel")
 alpha = 0.9
 use_progress = True
 batch_paths = [
-    "results/pi0_t10003_full_20260129_162720_qwen3-vl-plus",
-    "results/pi0_t7_full_20251110_220814_qwen3-vl-plus",
-    "results/pi05_task40_full_20260130_024756_qwen3-vl-plus",
-    "results/pi0_t10003_sim_full_20260131_004414_qwen3-vl-plus",
+    # "results/pi0_t10003_full_20260129_162720_qwen3-vl-plus",
+    # "results/pi0_t7_full_20251110_220814_qwen3-vl-plus",
+    # "results/pi05_task40_full_20260130_024756_qwen3-vl-plus",
+    # "results/pi0_t10003_sim_full_20260131_004414_qwen3-vl-plus",
+    # "results/pi0_t10003_sim_mixed_20260131_163443_qwen3-vl-plus",
+    # "results/pi0_t7_no_icl_20260505_232442_qwen3-vl-plus",
+    # "results/pi0_t10003_sim_no_icl_20260505_211810_qwen3-vl-plus",
+    # "results/pi0_t10003_no_icl_20260505_174718_qwen3-vl-plus",
+    # "results/pi05_task40_no_icl_20260506_003249_qwen3-vl-plus",
+    # "results/pi0_t10003_random_context_20260506_144354_qwen3-vl-plus",
+    # "results/pi0_t10003_sim_random_context_20260506_164351_qwen3-vl-plus",
+    # "results/pi0_t7_random_context_20260506_181855_qwen3-vl-plus",
+    # "results/pi05_task40_random_context_20260506_190144_qwen3-vl-plus",
+    # "results/pi0_t10003_no_train_data_20260506_231143_qwen3-vl-plus",
+    # "results/pi0_t10003_sim_no_train_data_20260507_013209_qwen3-vl-plus",
+    # "results/pi0_t7_no_train_data_20260507_132646_qwen3-vl-plus",
+    # "results/pi05_task40_no_train_data_20260507_135651_qwen3-vl-plus",
+    "results/pi0_t10_no_icl_20260507_180435_qwen3-vl-plus",
 ]
 
 
@@ -32,6 +46,8 @@ def bilinear2(x, mid):
 
 
 def main(batch_path, collate):
+    all_ = {"easy": [], "medium": [], "hard": []}
+
     result_paths = glob.glob(os.path.join(batch_path, "run_*", "result.json"))
     results = []
     for result_path in result_paths:
@@ -64,29 +80,22 @@ def main(batch_path, collate):
                     progress_1 = int(progress_1.split("/")[0]) / sum
                     suc += progress_1 * 1 / 2
             fai = 1 - suc
-            # alpha = old_succ / (old_succ + old_fail) * 0.25 + 0.75
             if item["difficulty"] == "easy":
-                alpha = 1 - bilinear(suc, succ["easy"] / total["easy"])
-                # alpha = bilinear2(suc, succ["easy"] / total["easy"])
-                # alpha = 1 - suc
                 total["easy"] += 1
                 succ["easy"] += suc
+                all_["easy"].append(suc)
             elif item["difficulty"] == "medium":
-                # alpha = bilinear2(suc, succ["medium"] / total["medium"])
-                alpha = 0.5
                 total["medium"] += 1
                 succ["medium"] += suc
+                all_["medium"].append(suc)
             elif item["difficulty"] == "hard":
-                # alpha = bilinear2(suc, succ["hard"] / total["hard"])
-                alpha = bilinear(suc, succ["hard"] / total["hard"])
-                # alpha = suc
                 total["hard"] += 1
                 succ["hard"] += suc
+                all_["hard"].append(suc)
             else:
-                # alpha = bilinear2(suc, succ["medium"] / total["medium"])
-                alpha = 0.5
                 total["medium"] += 1
                 succ["medium"] += suc
+                all_["medium"].append(suc)
 
             # total_succ += suc * alpha
             # total_weight += alpha
@@ -110,9 +119,9 @@ def main(batch_path, collate):
     # for old_ratio in old_ratios:
     #     axs[1].plot(old_ratio, ls="--")
     collate[meta["name"]] = {
-        "easy": np.mean(ratios["easy"], axis=0)[-1],
-        "medium": np.mean(ratios["medium"], axis=0)[-1],
-        "hard": np.mean(ratios["hard"], axis=0)[-1],
+        "easy": all_["easy"],
+        "medium": all_["medium"],
+        "hard": all_["hard"],
     }
 
 

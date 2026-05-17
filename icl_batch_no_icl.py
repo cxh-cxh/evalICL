@@ -4,7 +4,7 @@ from openai import AsyncOpenAI, OpenAI
 from datetime import datetime
 from retrieval import Retriever
 from config import configs
-from templete_new import *
+from templete_no_icl import *
 from itertools import chain
 
 import argparse
@@ -18,7 +18,6 @@ parser.add_argument(
     "--task", type=str, default="t10003", help="name of the task (for base prompt)"
 )
 parser.add_argument("--vlm", type=str, default="qwen3-vl-plus", help="name of the vlm")
-parser.add_argument("--k", type=int, default=5, help="count of neighbours")
 
 parser.add_argument("--query_envs", nargs="+", type=str, help="test environments")
 
@@ -34,31 +33,6 @@ parser.add_argument(
     type=str,
     default="random",
     help="how to sample ('all', 'random', 'env', 'shared', 'first', 'last')",
-)
-
-parser.add_argument(
-    "--database_envs", nargs="*", type=str, default=[], help="database environments"
-)
-
-parser.add_argument(
-    "--database_num",
-    type=int,
-    default=0,
-    help="count of initial records in the retriever",
-)
-
-parser.add_argument(
-    "--database_sample_method",
-    type=str,
-    default="random",
-    help="how to sample ('all', 'random', 'env', 'shared', 'first', 'last')",
-)
-
-parser.add_argument(
-    "--retrieve_method",
-    type=str,
-    default="k-near",
-    help="how to retrieve ('k-near', 'random')",
 )
 
 args = parser.parse_args()
@@ -150,120 +124,6 @@ def map_to_category(difficulty):
         return "NA"
 
 
-def build_examples_content(test_records, test_names):
-    content = []
-    for i in range(len(test_records)):
-        ex = test_records[i]
-
-        if "success_rate" in ex:  # old format
-            ex_desc_1 = example_templete_1.render(ex)
-            ex_desc_2 = example_templete_2.render(
-                ex,
-                progress_1_desc=progress_desc[args.task][1],
-                progress_2_desc=progress_desc[args.task][2],
-            )
-            desc_front_img = desc_front_img_templete.render(ex)
-            desc_side_img = desc_side_img_templete.render(ex)
-            img_info_path = "images/" + test_names[i] + "/info.json"
-            with open(img_info_path, "r") as f:
-                info = json.load(f)
-            content.extend(
-                [
-                    {"type": "text", "text": ex_desc_1},
-                ]
-                + (
-                    [
-                        {"type": "text", "text": desc_front_img},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{b64_of(os.path.join('images',test_names[i],info[str(ex['index'])]['front']))}"
-                            },
-                        },
-                    ]
-                    if "front" in info[str(ex["index"])]
-                    else []
-                )
-                + (
-                    [
-                        {"type": "text", "text": desc_side_img},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{b64_of(os.path.join('images',test_names[i],info[str(ex['index'])]['side']))}"
-                            },
-                        },
-                    ]
-                    if "side" in info[str(ex["index"])]
-                    else []
-                )
-                + [
-                    {"type": "text", "text": ex_desc_2},
-                ]
-            )
-        else:  # new format
-            ex_desc_1 = example_templete_1.render(ex)
-            fail_desc = ""
-            success_rate = ""
-            if ex["is_train"] == 0:
-                success_rate = (
-                    f"{ex['progress'].count(ex['max_progress'])}/{len(ex['progress'])}"
-                )
-                for prog in set(ex["progress"]):
-                    if prog in progress_desc[args.task]:
-                        fail_desc += fail_desc_templete.render(
-                            desc=progress_desc[args.task][prog],
-                            count=ex["progress"].count(prog),
-                            total=len(ex["progress"])
-                            - ex["progress"].count(ex["max_progress"]),
-                        )
-            ex_desc_2 = example_templete_2.render(
-                ex,
-                success_rate=success_rate,
-                fail_desc=fail_desc,
-            )
-            desc_front_img = desc_front_img_templete.render(ex)
-            desc_side_img = desc_side_img_templete.render(ex)
-            img_info_path = "images/" + test_names[i] + "/info.json"
-            with open(img_info_path, "r") as f:
-                info = json.load(f)
-            content.extend(
-                [
-                    {"type": "text", "text": ex_desc_1},
-                ]
-                + (
-                    [
-                        {"type": "text", "text": desc_front_img},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{b64_of(os.path.join('images',test_names[i],info[str(ex['index'])]['front']))}"
-                            },
-                        },
-                    ]
-                    if "front" in info[str(ex["index"])]
-                    else []
-                )
-                + (
-                    [
-                        {"type": "text", "text": desc_side_img},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{b64_of(os.path.join('images',test_names[i],info[str(ex['index'])]['side']))}"
-                            },
-                        },
-                    ]
-                    if "side" in info[str(ex["index"])]
-                    else []
-                )
-                + [
-                    {"type": "text", "text": ex_desc_2},
-                ]
-            )
-    return content
-
-
 # - Relative alignment between cubes: lateral offset, forward/back offset, height differences impacting reach and stacking stability.
 # - Camera pose variance: unusual perspective, tilt, extreme foreshortening.
 # - Lighting: glare, strong shadows, uneven illumination reducing color/edge contrast.
@@ -283,21 +143,16 @@ base_prompt_templetes = {
     "t10": base_prompt_templete_t10,
 }
 
-BASE_PROMPT = base_prompt_templetes[args.task].render(k=args.k)
+BASE_PROMPT = base_prompt_templetes[args.task].render()
 
 
-def build_message_for_query(test_record, test_name, retriever, second_check=False):
+def build_message_for_query(test_record, test_name, second_check=False):
     query_desc_1 = query_templete_1.render(test_record)
     query_desc_2 = query_templete_2.render()
     desc_front_img = desc_front_img_templete.render(test_record)
     desc_side_img = desc_side_img_templete.render(test_record)
     content = []
     content.append({"type": "text", "text": BASE_PROMPT})
-    retrieve = retriever.retrieve(
-        test_record, test_name, k=args.k, method=args.retrieve_method, increament=True
-    )
-    content.extend(build_examples_content(retrieve[1], retrieve[2]))
-    print(retrieve[0])
     img_info_path = "images/" + test_name + "/info.json"
     with open(img_info_path, "r") as f:
         info = json.load(f)
@@ -413,64 +268,18 @@ async def main():
             query_records.append(data)
             query_names.append([query_env_name] * len(data))
 
-        database_records = []
-        database_names = []
-        for database_env_name in args.database_envs:
-            data = load_jsonl(
-                "data/" + args.policy + "/" + database_env_name + ".jsonl"
-            )
-            database_records.append(data)
-            database_names.append([database_env_name] * len(data))
-
         print("Total records: ", sum([len(rec) for rec in query_records]))
 
-        if args.database_sample_method == "shared":
-            assert args.database_sample_method == args.query_sample_method
-            assert args.database_envs == args.query_envs
-            all_records = list(chain.from_iterable(database_records))
-            all_names = list(chain.from_iterable(database_names))
-            assert args.database_num + args.query_num <= len(all_records)
-            indices = list(range(len(all_records)))
-            random.shuffle(indices)
-            all_records = [all_records[index] for index in indices]
-            all_names = [all_names[index] for index in indices]
-            retriever = Retriever(
-                starting_test_records=all_records[: args.database_num],
-                starting_test_names=all_names[: args.database_num],
-                model_name=args.policy,
-                img_emb_path="data/img_emb.hdf5",
-            )
-            query_records = all_records[
-                args.database_num : args.database_num + args.query_num
-            ]
-            query_names = all_names[
-                args.database_num : args.database_num + args.query_num
-            ]
-        else:
-            database_records, database_names = sample_records(
-                database_records,
-                database_names,
-                args.database_num,
-                args.database_sample_method,
-            )
-            retriever = Retriever(
-                starting_test_records=database_records,
-                starting_test_names=database_names,
-                model_name=args.policy,
-                img_emb_path="data/img_emb.hdf5",
-            )
-            query_records, query_names = sample_records(
-                query_records,
-                query_names,
-                args.query_num,
-                args.query_sample_method,
-            )
+        query_records, query_names = sample_records(
+            query_records,
+            query_names,
+            args.query_num,
+            args.query_sample_method,
+        )
 
         queries = []
         for i in range(len(query_records)):
-            queries.append(
-                build_message_for_query(query_records[i], query_names[i], retriever)
-            )
+            queries.append(build_message_for_query(query_records[i], query_names[i]))
 
         output_dir = os.path.join(base_dir, batch_dir, f"run_{run}")
         os.makedirs(output_dir, exist_ok=True)

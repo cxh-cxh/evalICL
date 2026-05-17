@@ -10,9 +10,12 @@ sns.set_theme("notebook", style="darkgrid", palette="pastel")
 alpha = 0.9
 use_progress = True
 batch_paths = [
-    "results/pi0_t10_full_20260130_185110_qwen3-vl-plus",
-    "results/pi0_t10_5mm_20260131_032123_qwen3-vl-plus",
-    "results/pi0_t10_2mm_20260131_043921_qwen3-vl-plus",
+    # "results/pi0_t10_full_20260130_185110_qwen3-vl-plus",
+    # "results/pi0_t10_5mm_20260131_032123_qwen3-vl-plus",
+    # "results/pi0_t10_2mm_20260131_043921_qwen3-vl-plus",
+    # "results/pi0_drawer_full_20260207_195342_qwen3-vl-plus",
+    # "results/pi05_box_no_train_data_20260508_162015_qwen3-vl-plus",
+    "results/pi0_t10_random_context_20260508_234640_qwen3-vl-plus",
 ]
 
 
@@ -28,6 +31,41 @@ def bilinear2(x, mid):
         return 1 / mid * (mid - x)
     else:
         return 1 / (1 - mid) * (x - mid)
+
+
+weight_func = {
+    "linear": {
+        "easy": (lambda a, b: 1 - bilinear(a, b)),
+        "medium": (lambda a, b: 0.5),
+        "hard": (lambda a, b: bilinear(a, b)),
+    },
+    "mult": {
+        "easy": (lambda a, b: bilinear2(a, b) * (1 - a)),
+        "medium": (lambda a, b: bilinear2(a, b) * bilinear2(a, 0.5)),
+        "hard": (lambda a, b: bilinear2(a, b) * a),
+    },
+    "mult_sqrt": {
+        "easy": (lambda a, b: np.sqrt(bilinear2(a, b) * (1 - a))),
+        "medium": (lambda a, b: np.sqrt(bilinear2(a, b) * bilinear2(a, 0.5))),
+        "hard": (lambda a, b: np.sqrt(bilinear2(a, b) * a)),
+    },
+    "l2": {
+        "easy": (lambda a, b: np.sqrt(((a - b) ** 2 + (1 - a) ** 2) / 2)),
+        "medium": (lambda a, b: np.sqrt(((a - b) ** 2 + (0.5 - a) ** 2) / 2)),
+        "hard": (lambda a, b: np.sqrt(((a - b) ** 2 + a**2) / 2)),
+    },
+    "gaussian": {
+        "easy": (
+            lambda a, b: 1 / (np.exp(-((a - b) ** 2)) + np.exp(-((1 - a) ** 2))) - 0.5
+        ),
+        "medium": (
+            lambda a, b: 1 / (np.exp(-((a - b) ** 2)) + np.exp(-((0.5 - a) ** 2))) - 0.5
+        ),
+        "hard": (lambda a, b: 1 / (np.exp(-((a - b) ** 2)) + np.exp(-(a**2))) - 0.5),
+    },
+}
+
+func_name = "l2"
 
 
 def main(batch_path, collate):
@@ -58,33 +96,42 @@ def main(batch_path, collate):
         for item in result:
             res = item["record"].get("progress", [])
             max_progress = item["record"].get("max_progress", 1)
-            sum = len(res)
-            suc = res.count(max_progress) / sum
+            if isinstance(res, list):
+                sum = len(res)
+                suc = res.count(max_progress) / sum
+            else:
+                sum = 1
+                suc = (res == max_progress) / sum
             if use_progress:
                 for prog in range(1, max_progress):
-                    suc += (prog / max_progress) * (res.count(prog) / sum)
+                    if isinstance(res, list):
+                        suc += (prog / max_progress) * (res.count(prog) / sum)
+                    else:
+                        suc += (prog / max_progress) * ((res == prog) / sum)
             fai = 1 - suc
             # alpha = old_succ / (old_succ + old_fail) * 0.25 + 0.75
             if item["difficulty"] == "easy":
-                alpha = 1 - bilinear(suc, succ["easy"] / total["easy"])
-                # alpha = bilinear2(suc, succ["easy"] / total["easy"])
-                # alpha = 1 - suc
+                alpha = weight_func[func_name]["easy"](
+                    suc, succ["easy"] / total["easy"]
+                )
                 total["easy"] += 1
                 succ["easy"] += suc
             elif item["difficulty"] == "medium":
-                # alpha = bilinear2(suc, succ["medium"] / total["medium"])
-                alpha = 0.5
+                alpha = weight_func[func_name]["medium"](
+                    suc, succ["medium"] / total["medium"]
+                )
                 total["medium"] += 1
                 succ["medium"] += suc
             elif item["difficulty"] == "hard":
-                # alpha = bilinear2(suc, succ["hard"] / total["hard"])
-                alpha = bilinear(suc, succ["hard"] / total["hard"])
-                # alpha = suc
+                alpha = weight_func[func_name]["hard"](
+                    suc, succ["hard"] / total["hard"]
+                )
                 total["hard"] += 1
                 succ["hard"] += suc
             else:
-                # alpha = bilinear2(suc, succ["medium"] / total["medium"])
-                alpha = 0.5
+                alpha = weight_func[func_name]["medium"](
+                    suc, succ["medium"] / total["medium"]
+                )
                 total["medium"] += 1
                 succ["medium"] += suc
 
@@ -131,7 +178,7 @@ def main(batch_path, collate):
 
 
 if __name__ == "__main__":
-    collate_path = "./collate/result.json"
+    collate_path = f"./collate/result_{func_name}.json"
 
     collate = {}
     if os.path.exists(collate_path):

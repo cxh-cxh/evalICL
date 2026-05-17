@@ -7,6 +7,7 @@ import numpy as np
 import faiss
 from typing import List, Dict
 import os
+import random
 
 
 class Retriever:
@@ -90,7 +91,7 @@ class Retriever:
         else:
             self.index = faiss.IndexFlatL2()
 
-    def retrieve(self, test_record, test_name, k=5, increament=False):
+    def retrieve(self, test_record, test_name, k=5, method="k-near", increament=False):
         img_info_path = "images/" + test_name + "/info.json"
         if not self.is_video:
             with open(img_info_path, "r") as f:
@@ -111,7 +112,18 @@ class Retriever:
         if self.index.d != query_point.shape[1]:
             self.index = faiss.IndexFlatL2(query_point.shape[1])
 
-        distances, indices = self.index.search(query_point, k=k)
+        if method == "k-near":
+            distances, indices = self.index.search(query_point, k=k)
+        elif method == "random":
+            if len(self.test_results) >= k:
+                indices = [random.sample(range(len(self.test_results)), k)]
+            else:
+                indices = [
+                    list(range(len(self.test_results)))
+                    + [-1] * (k - len(self.test_results))
+                ]
+        else:
+            raise NotImplementedError
 
         if increament:
             self.test_results.append(test_record)

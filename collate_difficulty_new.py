@@ -12,26 +12,21 @@ use_progress = True
 batch_paths = [
     # "results/pi0_t10003_full_20260129_162720_qwen3-vl-plus",
     # "results/pi0_t7_full_20251110_220814_qwen3-vl-plus",
-    # "results/pi05_task40_full_20260130_024756_qwen3-vl-plus",
-    "results/pi0_t10_full_20260130_185110_qwen3-vl-plus",
+    "results/pi0_t10_random_context_20260508_234640_qwen3-vl-plus",
+    # "results/pi0_t10_full_20260130_185110_qwen3-vl-plus",
+    # "results/pi0_drawer_full_20260207_195342_qwen3-vl-plus,"
+    # "results/pi05_box_no_train_data_20260508_162015_qwen3-vl-plus,"
+    # "results/pi0_drawer_no_icl_20260508_172635_qwen3-vl-plus",
+    # "results/pi0_drawer_random_context_20260508_184340_qwen3-vl-plus",
+    # "results/pi05_box_no_icl_20260508_165031_qwen3-vl-plus",
+    # "results/pi05_box_random_context_20260508_193523_qwen3-vl-plus",
+    # "results/pi0_t10_no_icl_20260507_180435_qwen3-vl-plus",
 ]
 
 
-def bilinear(x, mid):
-    if x < mid:
-        return 0.5 / mid * x
-    else:
-        return 0.5 / (1 - mid) * (x - mid) + 0.5
-
-
-def bilinear2(x, mid):
-    if x < mid:
-        return 1 / mid * (mid - x)
-    else:
-        return 1 / (1 - mid) * (x - mid)
-
-
 def main(batch_path, collate):
+    all_ = {"easy": [], "medium": [], "hard": []}
+
     result_paths = glob.glob(os.path.join(batch_path, "run_*", "result.json"))
     results = []
     for result_path in result_paths:
@@ -52,26 +47,36 @@ def main(batch_path, collate):
         for item in result:
             res = item["record"].get("progress", [])
             max_progress = item["record"].get("max_progress", 1)
-            sum = len(res)
-            suc = res.count(max_progress) / sum
+            # suc = res / max_progress
+            if isinstance(res, list):
+                sum = len(res)
+                suc = res.count(max_progress) / sum
+            else:
+                sum = 1
+                suc = (res == max_progress) / sum
             if use_progress:
                 for prog in range(1, max_progress):
-                    suc += (prog / max_progress) * (res.count(prog) / sum)
+                    if isinstance(res, list):
+                        suc += (prog / max_progress) * (res.count(prog) / sum)
+                    else:
+                        suc += (prog / max_progress) * ((res == prog) / sum)
             fai = 1 - suc
             if item["difficulty"] == "easy":
                 total["easy"] += 1
                 succ["easy"] += suc
+                all_["easy"].append(suc)
             elif item["difficulty"] == "medium":
                 total["medium"] += 1
                 succ["medium"] += suc
+                all_["medium"].append(suc)
             elif item["difficulty"] == "hard":
                 total["hard"] += 1
                 succ["hard"] += suc
+                all_["hard"].append(suc)
             else:
-                # alpha = bilinear2(suc, succ["medium"] / total["medium"])
-                alpha = 0.5
                 total["medium"] += 1
                 succ["medium"] += suc
+                all_["medium"].append(suc)
 
             # total_succ += suc * alpha
             # total_weight += alpha
@@ -84,7 +89,6 @@ def main(batch_path, collate):
         ratios["medium"].append(ratio["medium"])
         ratios["hard"].append(ratio["hard"])
 
-    fig, axs = plt.subplots(2, figsize=(10, 8))
     ratios["easy"] = np.array(ratios["easy"])
     ratios["medium"] = np.array(ratios["medium"])
     ratios["hard"] = np.array(ratios["hard"])
@@ -95,15 +99,16 @@ def main(batch_path, collate):
     # for old_ratio in old_ratios:
     #     axs[1].plot(old_ratio, ls="--")
     collate[meta["name"]] = {
-        "easy": np.mean(ratios["easy"], axis=0)[-1],
-        "medium": np.mean(ratios["medium"], axis=0)[-1],
-        "hard": np.mean(ratios["hard"], axis=0)[-1],
+        "easy": all_["easy"],
+        "medium": all_["medium"],
+        "hard": all_["hard"],
     }
-    collate[meta["name"]] = {
-        "easy": ratios["easy"][1][-1],
-        "medium": ratios["medium"][1][-1],
-        "hard": ratios["hard"][1][-1],
-    }
+    # collate[meta["name"]] = {
+    #     "easy": ratios["easy"][1][-1],
+    #     "medium": ratios["medium"][1][-1],
+    #     "hard": ratios["hard"][1][-1],
+    # }
+    # print(ratios["easy"][0][-1], ratios["medium"][0][-1], ratios["hard"][0][-1])
 
 
 if __name__ == "__main__":

@@ -18,7 +18,6 @@ Goal: Predict a difficulty in "easy" "medium" or"hard".
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
-- Test case difficulty is evaluated with regard to the model. So the previous rollouts of the model should be considered.
 - Spatial displacement from training data (the provided L2 distances: total, blue-cube-only, pink-cube-only).
 - Position of the two cubes in the reference system of the work space, the distance of the two cubes, the distance of each cube with the robot.
 - The dynamic constraints of the robot.
@@ -30,9 +29,6 @@ Instructions:
 - The numeric infomation might be inaccurate, place the visual infomation at top priority.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - This evaluation is about predicting other model's outcome on the test case, not about predicting the difficulty of the test case itself. The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
 
@@ -56,7 +52,6 @@ Goal: Predict a difficulty in "easy" "medium" or"hard".
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
-- Test case difficulty is evaluated with regard to the model. So the previous rollouts of the model should be considered.
 - Spatial displacement from training data (the provided L2 distances: total, blue-cube-only, pink-cube-only).
 - Position of the two cubes in the reference system of the work space, the distance of the two cubes, the distance of each cube with the robot.
 - The dynamic constraints of the robot.
@@ -68,9 +63,6 @@ Instructions:
 - The numeric infomation might be inaccurate, place the visual infomation at top priority.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - This evaluation is about predicting other model's outcome on the test case, not about predicting the difficulty of the test case itself. The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
 
@@ -91,7 +83,6 @@ Goal: Predict a difficulty in "easy" "medium" or "hard" for the given test case.
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
-- Test case difficulty is evaluated with regard to the model. So the previous rollouts of the model should be considered.
 - The dynamic constraints of the robot. For example, an object blocked by another object might be hard to reach for the robot.
 - The occlusion. If an object is partially or fully occluded, the model might be hard to locate it.
 - The lighting conditions. Too bright or too dark lighting might affect the model's performance.
@@ -102,9 +93,6 @@ Instructions:
 - Analyze the visual information comprehensively.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - This evaluation is about predicting other model's outcome on the test case, not about predicting the difficulty of the test case itself. The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
 
@@ -125,7 +113,6 @@ Goal: Predict a difficulty in "easy" "medium" or "hard" for the given test case.
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
-- Test case difficulty is evaluated with regard to the model. So the previous rollouts of the model should be considered.
 - The shape of the block and the size of the slot. The shape will affect the difficulty to pick up and put the block, and the size will affect the difficulty to put it exactly into the slot.
 - The dynamic constraints of the robot. For example, an object blocked by another object might be hard to reach for the robot.
 - The lighting conditions. Too bright or too dark lighting might affect the model's performance.
@@ -136,9 +123,6 @@ Instructions:
 - Analyze the visual information comprehensively.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - This evaluation is about predicting other model's outcome on the test case, not about predicting the difficulty of the test case itself. The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
 
@@ -158,7 +142,6 @@ Goal: Predict a difficulty in "easy" "medium" or"hard".
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
-- Test case difficulty is evaluated with regard to the model. So the previous rollouts of the model should be considered.
 - Position of the three cubes in the reference system of the work space, the pairwise distances among the three cubes, the distance of each cube with the robot.
 - The dynamic constraints of the robot.
 - The lighting conditions.
@@ -169,9 +152,6 @@ Instructions:
 - The numeric infomation might be inaccurate, place the visual infomation at top priority.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - This evaluation is about predicting other model's outcome on the test case, not about predicting the difficulty of the test case itself. The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
 
@@ -191,7 +171,6 @@ Goal: Predict a difficulty in "easy" "medium" or"hard".
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
-- Test case difficulty is evaluated with regard to the model. So the previous rollouts of the model should be considered.
 - Position of the egg and pan in the reference system of the work space, the angle of the handle, the distance of each egg and pan with the robot.
 - The dynamic constraints of the robot.
 - The lighting conditions.
@@ -202,9 +181,6 @@ Instructions:
 - The numeric infomation might be inaccurate, place the visual infomation at top priority.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - This evaluation is about predicting other model's outcome on the test case, not about predicting the difficulty of the test case itself. The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
 
@@ -224,7 +200,6 @@ Goal: Predict a difficulty in "easy" "medium" or"hard".
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
-- Test case difficulty is evaluated with regard to the model. So the previous rollouts of the model should be considered.
 - Position of the three cubes in the reference system of the work space, the pairwise distances among the three cubes, the distance of each cube with the robot.
 - The dynamic constraints of the robot.
 - The lighting conditions.
@@ -235,9 +210,6 @@ Instructions:
 - The numeric infomation might be inaccurate, place the visual infomation at top priority.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - This evaluation is about predicting other model's outcome on the test case, not about predicting the difficulty of the test case itself. The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
 
@@ -253,11 +225,10 @@ The robot base is at (15, 0) in the work space. The robot can reach the entire w
 You will later be given:
 1.The image of the initial layout.
 
-Goal: Predict a difficulty in "easy" "medium" or"hard".
+Goal: Predict a difficulty in "easy" "medium" or "hard".
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
-- Test case difficulty is evaluated with regard to the model. So the previous rollouts of the model should be considered.
 - Position of the pink cube and the white area in the reference system of the work space, the distance of the pink cube and the white area, the distance of pink cube and white area with the robot.
 - The dynamic constraints of the robot.
 - The lighting conditions.
@@ -268,9 +239,6 @@ Instructions:
 - The numeric infomation might be inaccurate, place the visual infomation at top priority.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - This evaluation is about predicting other model's outcome on the test case, not about predicting the difficulty of the test case itself. The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
 
@@ -286,11 +254,10 @@ The robot base is at (15, 0) in the work space. The robot can reach the entire w
 You will later be given:
 1.The image of the initial layout.
 
-Goal: Predict a difficulty in "easy" "medium" or"hard".
+Goal: Predict a difficulty in "easy" "medium" or "hard".
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
-- Test case difficulty is evaluated with regard to the model. So the previous rollouts of the model should be considered.
 - Position of the circle puzzle block and the circle slot in the reference system of the work space, the distance of the circle puzzle block and the circle slot, the distance of circle puzzle block and circle slot with the robot.
 - The dynamic constraints of the robot.
 - The lighting conditions.
@@ -301,9 +268,6 @@ Instructions:
 - The numeric infomation might be inaccurate, place the visual infomation at top priority.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - This evaluation is about predicting other model's outcome on the test case, not about predicting the difficulty of the test case itself. The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
 
@@ -319,11 +283,10 @@ The robot base is at (15, 0) in the work space. The robot can reach the entire w
 You will later be given:
 1.The image of the initial layout.
 
-Goal: Predict a difficulty in "easy" "medium" or"hard".
+Goal: Predict a difficulty in "easy" "medium" or "hard".
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
-- Test case difficulty is evaluated with regard to the model. So the previous rollouts of the model should be considered.
 - Position of the hexagon puzzle block and the hexagon slot in the reference system of the work space, the distance of the hexagon puzzle block and the hexagon slot, the distance of hexagon puzzle block and hexagon slot with the robot.
 - The dynamic constraints of the robot.
 - The lighting conditions.
@@ -334,9 +297,6 @@ Instructions:
 - The numeric infomation might be inaccurate, place the visual infomation at top priority.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - This evaluation is about predicting other model's outcome on the test case, not about predicting the difficulty of the test case itself. The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
 
@@ -350,10 +310,9 @@ The work space is a 15cm x 30cm rectangle on a flat horizontal surface with the 
 The robot base is at (15, 0) in the work space. The robot can reach the entire work space(reaching for the two far corners of work space presents high difficulty). 
 
 You will later be given:
-1. Some videos (sampled by 1Hz) of previous rollout on other test cases.
-2. A video (sampled by 1Hz) of the rollout on this test case.
+1. A video (sampled by 1Hz) of the rollout on this test case.
 
-Goal: Predict a difficulty in "easy" "medium" or"hard".
+Goal: Predict a difficulty in "easy" "medium" or "hard".
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
@@ -368,10 +327,9 @@ Instructions:
 - Keep reasoning explicit: reference concrete visual or numeric evidence.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
+
 
 base_prompt_templete_box = Template(
     """You will evaluate the difficulty of a robot manipulation test case: empty the box by moving
@@ -384,10 +342,9 @@ The work space is a 15cm x 30cm rectangle on a flat horizontal surface with the 
 The robot base is at (15, 0) in the work space. The robot can reach the entire work space(reaching for the two far corners of work space presents high difficulty). 
 
 You will later be given:
-1. Some videos (sampled by 1Hz) of previous rollout on other test cases.
-2. A video (sampled by 1Hz) of the rollout on this test case.
+1. A video (sampled by 1Hz) of the rollout on this test case.
 
-Goal: Predict a difficulty in "easy" "medium" or"hard".
+Goal: Predict a difficulty in "easy" "medium" or "hard".
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
@@ -403,8 +360,6 @@ Instructions:
 - Keep reasoning explicit: reference concrete visual or numeric evidence.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
 
@@ -421,7 +376,6 @@ Goal: Predict a difficulty in "easy" "medium" or"hard".
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
-- Test case difficulty is evaluated with regard to the model. So the previous rollouts of the model should be considered.
 - Position of the object and the plate, the distance between the plate and the tray, the distance of the object from the robot.
 - The shape of the object. Some objects might be difficult for grippers to grasp.
 - The dynamic constraints of the robot. For example, an object blocked by another object might be hard to reach for the robot.
@@ -433,9 +387,6 @@ Instructions:
 - Analyze the visual information comprehensively.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - This evaluation is about predicting other model's outcome on the test case, not about predicting the difficulty of the test case itself. The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
 
@@ -451,7 +402,6 @@ Goal: Predict a difficulty in "easy" "medium" or"hard".
 Interpretation: "easy" means almost certainly succeeds, "medium" means it is not clear if it succeeds or fails, "hard" is almost certainly fails.
 
 Key factors to consider, these factors must be explicitly rated in your thinking process point by point:
-- Test case difficulty is evaluated with regard to the model. So the previous rollouts of the model should be considered.
 - Position of the object and the plate, the distance between the plate and the tray, the distance of the object from the robot.
 - The shape of the object. Some objects might be difficult for grippers to grasp.
 - The dynamic constraints of the robot. For example, an object blocked by another object might be hard to reach for the robot.
@@ -463,9 +413,6 @@ Instructions:
 - Analyze the visual information comprehensively.
 - Do not output the difficulty until a [QUERY START] block is given. You will place detailed reasoning inside <think> ... </think> and a output inside <difficulty> ... </difficulty> as later instructed.
 - This evaluation is about predicting other model's outcome on the test case, not about predicting the difficulty of the test case itself. The difficulty is not a measure of how hard it is for you, but rather how hard it is for the robot to complete the task in the test case.
-
-
-You will be provided with {{ k }} records of previous rollouts or train cases. Use the records as examples to calibrate your internal scale. Do not restate these instructions in the answer.
 """
 )
 
@@ -498,7 +445,6 @@ progress_desc = {
         2: "the model moved 2 object out of the box",
         3: "the model moved 3 object out of the box",
         4: "the model moved 4 object out of the box",
-        5: "the model moved 5 object out of the box",
     },
 }
 
@@ -553,15 +499,10 @@ example_templete_2 = Template("""
 {%- if success_rate %}
 <success_rate>
 The model succeeded in performing the task for {{ success_rate.split('/')[0] }} times out of {{ success_rate.split('/')[1] }} trials. 
-{%- if progress_1_rate %}
-Among the failed trials, {{ progress_1_desc }} for {{ progress_1_rate.split('/')[0] }} times out of {{ progress_1_rate.split('/')[1] | int - success_rate.split('/')[0] | int }} trials.
-{% endif -%}
-{%- if progress_2_rate %}
-Among the failed trials, {{ progress_2_desc }} for {{ progress_2_rate.split('/')[0] }} times out of {{ progress_2_rate.split('/')[1] | int - success_rate.split('/')[0] | int }} trials.
-{% endif -%}
 {{ fail_desc }}
 </success_rate>
 {% endif -%}
+
 [EXAMPLE END]
 """)
 

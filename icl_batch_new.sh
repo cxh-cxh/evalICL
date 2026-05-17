@@ -11,10 +11,14 @@
 # python icl_batch.py -n pi0_t7_246 -c 10 --policy pi0_t7 --task t7 --vlm qwen3-vl-plus --queries_num 150 \
 #     --envs t70005_env1  t70003_env1  t70001_env1 --train_envs t70000_train t70001_train t70002_train t70003_train t70004_train t70005_train
 
-python video_icl_batch.py -n pi0_drawer_full -c 4 --policy pi0_drawer --task drawer --vlm qwen3-vl-plus --queries_num 200 \
-    --envs drawer_env1 
+# python video_icl_batch.py -n pi0_drawer_full -c 4 --policy pi0_drawer --task drawer --vlm qwen3-vl-plus --queries_num 200 \
+#     --envs drawer_env1 
 
+python video_icl_batch.py -n pi0_drawer_random_context -c 1 --policy pi0_drawer --task drawer --vlm qwen3-vl-plus --queries_num 200 \
+    --envs drawer_env1 --retrieve_method random
 
+python video_icl_batch.py -n pi05_box_random_context -c 5 --policy pi05_box --task box --vlm qwen3-vl-plus --queries_num 100 \
+    --envs box_3 box_4 box_5 box_6 --retrieve_method random
 
 #  --envs t70005_env1 t70004_env1 t70002_env1 t70003_env1 t70001_env1 t70000_env1 --train_envs t70000_train t70001_train t70002_train t70003_train t70004_train t70005_train
  
